@@ -14,6 +14,10 @@ class TinyGenRequest(BaseModel):
 
 class DiffResponse(BaseModel):
     diff: str
+    
+@router.get("/")
+async def base_url():
+    return {"message": "Welcome to the TinyGen API!"}
 
 @router.post("/run", response_model=DiffResponse)
 async def run_tiny_gen(request: TinyGenRequest):
