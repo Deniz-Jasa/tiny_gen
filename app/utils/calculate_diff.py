@@ -7,6 +7,6 @@ def calculate_code_diff(original_code, suggested_changes):
     diff_str = '\n'.join(diff)
 
     # Add the diff header
-    print(diff_str)
+    # print(diff_str)
     
     return diff_str
