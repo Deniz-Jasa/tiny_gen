@@ -17,7 +17,7 @@ class DiffResponse(BaseModel):
     
 @router.get("/")
 async def base_url():
-    return {"message": "Welcome to the TinyGen API!"}
+    return {"message": "Welcome to Deniz Jasarbasic's Implementation of the TinyGen API!"}
 
 @router.post("/run", response_model=DiffResponse)
 async def run_tiny_gen(request: TinyGenRequest):
@@ -55,6 +55,6 @@ async def run_tiny_gen(request: TinyGenRequest):
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
+    
 app = FastAPI()
 app.include_router(router)
