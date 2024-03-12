@@ -22,14 +22,6 @@ The base URL for the TinyGen API is `base_api_url` = [http://3.22.241.58](http:/
 You can access this URL on the web, and it will return a simple welcome message:
 <img width="862" alt="Screenshot 2024-03-12 at 2 14 38 AM" src="https://github.com/Deniz-Jasa/tiny_gen/assets/46465622/b20b4cc9-fc80-4a98-bde5-3290efe7605b">
 
-### Authorization
-
-All API requests require the use of a generated API key. You can find your API key, or generate a new one, by navigating to the /settings endpoint, or clicking the “Settings” sidebar item.
-
-```http
-GET /api/campaigns/?api_key=12345678901234567890123456789012
-```
-
 ### Send Body
 
 ```json
