@@ -15,27 +15,27 @@ For more detailed information about the implementation of this FastAPI service. 
 
 ## Usage
 
-### Base API URL
+### Basics
 
 The base URL for the TinyGen API is `base_api_url` = [http://3.22.241.58](http://3.22.241.58)
 
-You can access this URL on the web, and it will return a simple welcome message:
-<img width="862" alt="Screenshot 2024-03-12 at 2 14 38 AM" src="https://github.com/Deniz-Jasa/tiny_gen/assets/46465622/b20b4cc9-fc80-4a98-bde5-3290efe7605b">
+| Methods | Endpoints | Description                                         |
+|---------|-----------|-----------------------------------------------------|
+| GET     | `/`       | Returns a welcome message.                          |
+| POST    | `/run`    | Executes tinygen with required parameters repoUrl and prompt in the request body. Return a unified diff of suggested changes. |
+| GET     | `/docs`   | Provides interactive API documentation via Swagger UI. |
 
-### Send Body
+
+### Request Body
 
 ```json
 {
     "repoUrl": "a public GitHub URL",
-    "prompt": "A prompt, ex: Change all the code to Java."
+    "prompt": "A prompt, ex: Convert the source code to Java."
 }
 ```
 
-### Endpoints
-
-`run` - Given a repoUrl and prompt, returns a unified diff (as a string) of changes in the code.
-
-### Responses
+### Response
 
 ```json
 {
@@ -52,12 +52,11 @@ TinyGen returns the following status codes in its API:
 | Status Code | Description            |
 |-------------|------------------------|
 | 200         | OK                     |
-| 201         | CREATED                |
 | 400         | BAD REQUEST            |
-| 404         | NOT FOUND              |
+| 422         | UNPROCESSABLE ENTITY   |
 | 500         | INTERNAL SERVER ERROR  |
 
-## Run in Postman Example
+## Run in Postman
 
 Click the button below to import the Postman collection and environment file. Play around with the `Welcome` and `Run` steps. The example in the collection below uses a simple multi-file python repository and asks a simple prompt to convert the code to Java. Feel free to play around with this example or use your own:
 
@@ -68,15 +67,18 @@ Click the button below to import the Postman collection and environment file. Pl
 Explore the API endpoints using the interactive Swagger documentation tool at [http://3.22.241.58/docs](http://3.22.241.58/docs)
 
 
-## Local Setup & Dependencies
+## Local Setup
 
-Dependencies:
+### Step 1: Dependencies
 
-- Python
-- FastAPI
-- Python libraries: difflib, os, OpenAI, dotenv, github
+Tinygen uses Python 3. All necessary libraries are listed in the **`requirements.txt`** file. Install them by running **`pip install -r requirements.txt`**.
 
-`.env`  file or pass via secrets:
+- Python ≥ 3.9.7
+- Libraries: difflib, os, OpenAI, python-dotenv, PyGithub, supabase, uvicorn, pydantic, fastapi
+
+### Step 2: Environment Variables
+
+You can create a .env file locally to store the key information below, or pass it via secrets when deployed.
 
 ```python
 # ChatGPT API Access
@@ -90,8 +92,9 @@ SUPABASE_URL=""
 SUPABASE_KEY=""
 ```
 
-When running locally, go to the `app/` directory and run:
+### Step 3: Running Tinygen
 
+Go to the `app/` directory and run:
 ```python
 python3 -m uvicorn main:app --reload
 ```

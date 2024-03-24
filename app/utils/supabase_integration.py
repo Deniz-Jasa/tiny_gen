@@ -11,7 +11,16 @@ SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-def store(table_name: str, data: Dict):
-    """Inserts data into the specified Supabase table."""
-    response = supabase.table(table_name).insert(data).execute()
+def store(data: Dict) -> Dict:
+    """
+    Inserts data into the 'requests' Supabase table and returns the response.
+
+    Parameters:
+    - table_name (str): The name of the Supabase table where data will be stored.
+    - data (Dict): A dictionary of data to be inserted into the table.
+
+    Returns:
+    - Dict: The response from the Supabase insert operation, typically including details of the inserted data.
+    """
+    response = supabase.table("requests").insert(data).execute()
     return response

@@ -49,7 +49,7 @@ async def run_tiny_gen(request: TinyGenRequest):
             "diff": diff,
             "timestamp": datetime.now().isoformat()
         }
-        store("requests", store_data)
+        store(store_data)
         
         return DiffResponse(diff=diff)
     
