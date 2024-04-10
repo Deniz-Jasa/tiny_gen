@@ -1,6 +1,8 @@
-# Deniz Jasarbasic's TinyGen
+![Safeimagekit-resized-img](https://github.com/Deniz-Jasa/tiny_gen/assets/46465622/a8f680eb-418c-488a-b575-18eff5d7b709)
 
-TinyGen is a simplified version of Codegen, a code generation service designed to transform code from a public GitHub repository based on specific prompts, such as converting the code to a different language (e.g., TypeScript). The service outputs the difference (diff) between the original and transformed code. Had a blast and hope you enjoy my implementation :)
+# Deniz Jasarbasic's Codeserv
+
+Codeserv is a simplified version of Codegen, a code generation service designed to transform code from a public GitHub repository based on specific prompts, such as converting the code to a different language (e.g., TypeScript). The service outputs the difference (diff) between the original and transformed code. Had a blast and hope you enjoy my implementation :)
 
 
 ## Overview
@@ -17,12 +19,12 @@ For more detailed information about the implementation of this FastAPI service. 
 
 ### Basics
 
-The base URL for the TinyGen API is `base_api_url` = [http://3.22.241.58](http://3.22.241.58)
+The base URL for the Codeserv API is `base_api_url` = [http://3.22.241.58](http://3.22.241.58)
 
 | Methods | Endpoints | Description                                         |
 |---------|-----------|-----------------------------------------------------|
 | GET     | `/`       | Returns a welcome message.                          |
-| POST    | `/run`    | Executes tinygen with required parameters repoUrl and prompt in the request body. Return a unified diff of suggested changes. |
+| POST    | `/run`    | Executes Codeserv with required parameters repoUrl and prompt in the request body. Return a unified diff of suggested changes. |
 | GET     | `/docs`   | Provides interactive API documentation via Swagger UI. |
 
 
@@ -47,7 +49,7 @@ The base URL for the TinyGen API is `base_api_url` = [http://3.22.241.58](http:/
   
 ## Status Codes
 
-TinyGen returns the following status codes in its API:
+Codeserv returns the following status codes in its API:
 
 | Status Code | Description            |
 |-------------|------------------------|
@@ -71,7 +73,7 @@ Explore the API endpoints using the interactive Swagger documentation tool at [h
 
 ### Step 1: Dependencies
 
-Tinygen uses Python 3. All necessary libraries are listed in the **`requirements.txt`** file. Install them by running **`pip install -r requirements.txt`**.
+Codeserv uses Python 3. All necessary libraries are listed in the **`requirements.txt`** file. Install them by running **`pip install -r requirements.txt`**.
 
 - Python ≥ 3.9.7
 - Libraries: difflib, os, OpenAI, python-dotenv, PyGithub, supabase, uvicorn, pydantic, fastapi
@@ -92,7 +94,7 @@ SUPABASE_URL=""
 SUPABASE_KEY=""
 ```
 
-### Step 3: Running Tinygen
+### Step 3: Running Codeserv
 
 Go to the `app/` directory and run:
 ```python
