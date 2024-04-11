@@ -2,7 +2,7 @@
 
 # Deniz Jasarbasic's Codeserv
 
-Codeserv is a simplified version of Codegen, a code generation service designed to transform code from a public GitHub repository based on specific prompts, such as converting the code to a different language (e.g., TypeScript). The service outputs the difference (diff) between the original and transformed code. Had a blast and hope you enjoy my implementation :)
+Codeserv is a simplified code generation service designed to transform code from a public GitHub repository based on specific prompts, such as converting the code to a different language (e.g., TypeScript). The service outputs the difference (diff) between the original and transformed code. Had a blast and hope you enjoy my implementation :)
 
 
 ## Overview
