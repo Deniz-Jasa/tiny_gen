@@ -1,62 +1,173 @@
-from github import Github
+from github import Github, GithubIntegration
 import base64
 import os
 from dotenv import load_dotenv
+import uuid
+from .calculate_diff import parse_files
+import jwt
+import time
 
 load_dotenv()
-github_token = os.environ['GITHUB_TOKEN']
+
+def get_installation_token():
+    """
+    Generate an installation access token for the GitHub App
+    """
+    try:
+        # Your GitHub App's identifier
+        app_id = os.getenv('GITHUB_APP_ID')
+        if not app_id:
+            raise ValueError("GITHUB_APP_ID not found in environment")
+        
+        # Read private key from file
+        try:
+            with open('../codegeneratorbot.2025-02-23.private-key.pem', 'r') as key_file:
+                private_key = key_file.read()
+                print("Successfully read private key")
+        except Exception as e:
+            print(f"Error reading private key file: {e}")
+            raise
+        
+        # Create GitHub integration
+        try:
+            git_integration = GithubIntegration(
+                int(app_id),
+                private_key,
+            )
+            print("Successfully created GitHub integration")
+        except Exception as e:
+            print(f"GitHub integration creation failed: {e}")
+            raise
+        
+        # Get installation access token
+        installation_id = os.getenv('GITHUB_INSTALLATION_ID')
+        if not installation_id:
+            raise ValueError("GITHUB_INSTALLATION_ID not found in environment")
+            
+        token = git_integration.get_access_token(int(installation_id)).token
+        print("Successfully got installation token")
+        return token
+        
+    except Exception as e:
+        print(f"Error in get_installation_token: {str(e)}")
+        raise
+
+def get_repo_files_as_string(repo_url: str) -> str:
+    """
+    Gets all files from the repository as a formatted string.
+    """
+    try:
+        # Extract owner and repo name from URL
+        parts = repo_url.rstrip('/').split('/')
+        owner = parts[-2]
+        repo_name = parts[-1]
+
+        # Initialize GitHub client
+        token = get_installation_token()
+        g = Github(token)
+        repo = g.get_repo(f"{owner}/{repo_name}")
+
+        # Get all files in the repository
+        contents = repo.get_contents("")
+        all_files = []
+
+        while contents:
+            file_content = contents.pop(0)
+            if file_content.type == "dir":
+                contents.extend(repo.get_contents(file_content.path))
+            else:
+                try:
+                    # Skip binary files
+                    if is_binary_string(file_content.decoded_content):
+                        continue
+                    # Format each file with its path and content
+                    file_text = file_content.decoded_content.decode('utf-8')
+                    all_files.append(f"File {file_content.path}:\n{file_text}\n")
+                except Exception as e:
+                    print(f"Error reading file {file_content.path}: {e}")
+                    continue
+
+        return "\n".join(all_files)
+
+    except Exception as e:
+        print(f"Error getting repo content: {e}")
+        raise
+
+def create_pull_request(repo_url: str, modified_content: str, pr_description: str) -> str:
+    """
+    Creates a pull request with the modified content.
+    Returns the URL of the created PR.
+    """
+    try:
+        # Extract owner and repo name from URL
+        parts = repo_url.rstrip('/').split('/')
+        owner = parts[-2]
+        repo_name = parts[-1]
+
+        # Initialize GitHub client
+        token = get_installation_token()
+        g = Github(token)
+        repo = g.get_repo(f"{owner}/{repo_name}")
+
+        # Create new branch
+        base_branch = repo.default_branch
+        new_branch = f"codegenerator-suggestions-{uuid.uuid4().hex[:8]}"
+        
+        # Get base branch's HEAD commit
+        base_ref = repo.get_git_ref(f"heads/{base_branch}")
+        base_sha = base_ref.object.sha
+        
+        # Create new branch from base branch
+        repo.create_git_ref(f"refs/heads/{new_branch}", base_sha)
+
+        # Parse and apply file changes
+        files = parse_files(modified_content)
+        changed_files = []
+        for file_path, new_content in files.items():
+            try:
+                file = repo.get_contents(file_path, ref=new_branch)
+                repo.update_file(
+                    path=file_path,
+                    message=f"Update {file_path}",
+                    content=new_content,
+                    sha=file.sha,
+                    branch=new_branch
+                )
+                changed_files.append(file_path)
+            except Exception as e:
+                print(f"Error updating {file_path}: {e}")
+                raise
+
+        # Create a more detailed PR description
+        detailed_description = f"""
+## Changes Made
+{pr_description}
+
+### Modified Files
+{chr(10).join(f'- `{file}`' for file in changed_files)}
+
+---
+🤖 Generated by Code Generator Bot
+"""
+
+        # Create pull request
+        pr = repo.create_pull(
+            title=f"[Code Generator] Code Improvements",
+            body=detailed_description,
+            head=new_branch,
+            base=base_branch
+        )
+
+        return pr.html_url
+
+    except Exception as e:
+        print(f"Error creating PR: {e}")
+        raise
 
 def is_binary_string(bytes_data):
     """
-    Determines if the provided bytes data represents a binary string. Helper function used to skip binary files.
-    
-    Parameters:
-    - bytes_data (bytes): The bytes data to check.
-
-    Returns:
-    - bool: True if the bytes_data represents a binary string; False otherwise.
+    Determines if the provided bytes data represents a binary string.
+    Helper function used to skip binary files.
     """
     text_characters = bytearray({7, 8, 9, 10, 12, 13, 27} | set(range(0x20, 0x100)) - {0x7f})
     return bool(bytes_data.translate(None, text_characters))
-
-
-def get_repo_files_as_string(repo_url: str):
-    """
-    Retrieves the contents of a repository from the given repository URL and returns it as a string.
-    
-    Parameters:
-    - repo_url (str): The URL of the repository from which files will be retrieved.
-    
-    Returns:
-    - str: A string representation of the repository files' contents.
-    
-    """
-    g = Github(github_token)
-    
-    # Extract the repository's full name (user/repo) from the URL
-    repo_name = repo_url.rstrip('/').split('/')[-2] + '/' + repo_url.rstrip('/').split('/')[-1]
-    
-    repo = g.get_repo(repo_name)
-    contents = repo.get_contents("")
-    repo_code = ""
-
-    while contents:
-        file_content = contents.pop(0)
-        
-        if file_content.type == "dir":
-            contents.extend(repo.get_contents(file_content.path))
-        
-        else:
-            # Check if the content is binary, skip!
-            try:
-                if file_content.encoding == 'base64' and is_binary_string(base64.b64decode(file_content.content)):
-                    continue
-                
-                content = file_content.decoded_content.decode('utf-8')
-                file_name = file_content.path
-                repo_code += f"File {file_name}:\n{content}\n\n"
-                
-            except Exception as e:
-                print(f"Error processing file {file_content.path}: {e}")
-    
-    return repo_code.strip()
